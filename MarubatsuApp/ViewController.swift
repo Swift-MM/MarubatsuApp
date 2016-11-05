@@ -20,61 +20,98 @@ class ViewController: UIViewController {
     // 正解数を格納するための変数
     var currentYesNum: Int = 0
     
-    // 問題を保存しておくための定数
-    let questions: [[String: Any]] = [
-        [
-            "question": "iPhoneアプリを開発する統合環境はZcodeである",
-            "answer": false
-        ],
-        [
-            "question": "Xcode画面の右側にはユーティリティー図がある",
-            "answer": true
-        ],
-        [
-            "question": "UILabelは文字列を表示する際に利用する",
-            "answer": true
-        ],
-    ]
+    // ばつボタンを押したときに呼ばれる関数
+    @IBAction func tappedNoButton(_ sender: UIButton) {
+        // 問題の正誤を判定 (関数の引数としてfalseをわたす)
+        checkAnswer(yourAnswer: false)
+    }
+    
+    // まるボタンを押したときに呼ばれる関数
+    @IBAction func tappedYesButton(_ sender: UIButton) {
+        // 問題の正誤を判定 (関数の引数としてtrueをわたす)
+        checkAnswer(yourAnswer: true)
+    }
+    
+    // ロードされたときに呼び出される関数
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+        
+        let ud = UserDefaults.standard
+        
+        // iPhone端末内にquestionsというkeyで何も保存されていなかったら、空のarrayを保存する(エラー回避)
+        if (ud.object(forKey: "questions") == nil) {
+            ud.setValue([], forKey: "questions")
+        }
+        
+        // 問題を表示
+        showQuestion()
+    }
+    
+    // 画面が表示されたときに呼ばれす関数
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        showQuestion()
+    }
     
     // 問題を表示するための関数
     func showQuestion() {
-        // question定数に現在の問題を格納
-        let question = questions[currentQuestionNum]
         
-        // question定数に格納されている問題がStringかどうかチェックする
-        if let que = question["question"] as? String {
-            // 問題文の表示
-            questionLabel.text = que
-            // 問題番号の表示 (問題番号を格納しているInt型の変数(currentQuestionNum)をString型に変換)
-            questionNumLabel.text = "問題No: " + String(currentQuestionNum+1)
-            // 正解数の表示
-            yesNum.text = "正解数: " + String(currentYesNum)
+        // UserDefaultsを使って、iPhone端末内に保存されている問題を取り出し、questions定数に格納
+        let ud = UserDefaults.standard
+        let questions:[[String: Any]] = ud.object(forKey: "questions") as! [[String: Any]]
+        
+        
+        if (questions.count > currentQuestionNum) {
+            // question定数に現在の問題を格納
+            let question = questions[currentQuestionNum]
+            
+            // question定数に格納されている問題がStringかどうかチェックする
+            if let que = question["question"] as? String {
+                // 問題文の表示
+                questionLabel.text = que
+                // 問題番号の表示 (問題番号を格納しているInt型の変数(currentQuestionNum)をString型に変換)
+                questionNumLabel.text = "問題No: " + String(currentQuestionNum+1)
+                // 正解数の表示
+                yesNum.text = "正解数: " + String(currentYesNum)
+            }
+        } else {
+            // 問題がなかった場合の処理
+            questionLabel.text = "No Question. Let's Create it!"
+            questionNumLabel.text = "問題No: 0"
         }
     }
     
     // 問題の正誤をチェックするための関数
     func checkAnswer(yourAnswer: Bool) {
-        // question変数に現在の問題を格納
-        let question = questions[currentQuestionNum]
         
-        // question変数に格納されている解答がBoolean型(論理型, true or false)かどうかチェックする
-        if let ans = question["answer"] as? Bool {
+        // UserDefaultsを使って、iPhone端末内に保存されている問題を取り出し、questions定数に格納
+        let ud = UserDefaults.standard
+        let questions: [[String: Any]] = ud.object(forKey: "questions") as! [[String : Any]]
+        
+        if (questions.count > currentQuestionNum) {
+            // question変数に現在の問題を格納
+            let question = questions[currentQuestionNum]
             
-            // もし、ユーザーが選んだ解答が正解だったら
-            if yourAnswer == ans {
-                // currentQuestionNumを1足して次の問題に進む
-                currentQuestionNum += 1
-                // 正答数を+1
-                currentYesNum += 1
-                // アラートの表示
-                showAlert(message: "正解!")
-                answerLabel.text = "正解!"
-            }
-            else {
-                // 不正解
-                // アラートの表示
-                showAlert(message: "不正解...")
-                answerLabel.text = "不正解..."
+            // question変数に格納されている解答がBoolean型(論理型, true or false)かどうかチェックする
+            if let ans = question["answer"] as? Bool {
+                
+                // もし、ユーザーが選んだ解答が正解だったら
+                if yourAnswer == ans {
+                    // currentQuestionNumを1足して次の問題に進む
+                    currentQuestionNum += 1
+                    // 正答数を+1
+                    currentYesNum += 1
+                    // アラートの表示
+                    showAlert(message: "正解!")
+                    answerLabel.text = "正解!"
+                }
+                else {
+                    // 不正解
+                    // アラートの表示
+                    showAlert(message: "不正解...")
+                    answerLabel.text = "不正解..."
+                }
             }
         }
         
@@ -99,29 +136,6 @@ class ViewController: UIViewController {
         alert.addAction(close)
         // 作成したアラートを表示
         present(alert, animated: true, completion: nil)
-    }
-    
-
-    // ばつボタンを押したときに呼ばれる関数
-    @IBAction func tappedNoButton(_ sender: UIButton) {
-        // 問題の正誤を判定 (関数の引数としてfalseをわたす)
-        checkAnswer(yourAnswer: false)
-        
-    }
-    
-    // まるボタンを押したときに呼ばれる関数
-    @IBAction func tappedYesButton(_ sender: UIButton) {
-        // 問題の正誤を判定 (関数の引数としてtrueをわたす)
-        checkAnswer(yourAnswer: true)
-    }
-    
-    // ロードされたときに呼び出される関数
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        
-        // 問題を表示
-        showQuestion()
     }
 }
 
